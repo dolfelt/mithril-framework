@@ -8,7 +8,7 @@ var sourcemaps = require("gulp-sourcemaps");
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
-var assign = require('lodash.assign');
+var es = require('event-stream');
 
 var concat = require("gulp-concat");
 var sass = require("gulp-sass");
@@ -16,6 +16,10 @@ var autoprefixer = require('gulp-autoprefixer');
 var connect = require("gulp-connect");
 
 // Configuration
+var sourcePath = './src/';
+var entryFiles = [
+    'app.js'
+];
 var output = {
   'js': './dist/assets/js',
   'css': './dist/assets/css'
@@ -24,35 +28,47 @@ var vendorFiles = [
   'node_modules/mithril/mithril.js',
   'node_modules/underscore/underscore.js'
 ];
+var configFiles = [
+    './src/index.html'
+];
 
+var ES6 = {
+    bundle: function(file) {
+        var opts = {
+            entries: [sourcePath + file],
+            paths: ['./node_modules', sourcePath],
+            cache: {},
+            packageCache: {}
+        };
+        var b = browserify(opts);
+        b.file = file;
 
-// add custom browserify options here
-var customOpts = {
-  entries: ['./src/app.js'],
-  paths: ['./node_modules','./src'],
-  debug: true
-};
-var opts = assign({}, watchify.args, customOpts);
-var b = watchify(browserify(opts));
+        b.transform(babelify).transform(envify(require('./config.js')));
 
-// add transformations here
-b.transform(babelify).transform(envify(require('./config.js')));
-
-gulp.task("bundle", bundle);
-b.on('log', gutil.log); // output build logs to terminal
-
-function bundle() {
-  return b.bundle()
-    // log errors if they happen
-    .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-    .pipe(source('app.js'))
-    // optional, remove if you don't need to buffer file contents
-    .pipe(buffer())
-    // optional, remove if you dont want sourcemaps
-    .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-       // Add transformation tasks to the pipeline here.
-    .pipe(sourcemaps.write('./')) // writes .map file
-    .pipe(gulp.dest(output.js));
+        return b;
+    },
+    build: function(bundle) {
+        return bundle.bundle()
+            // log errors if they happen
+            .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+            .pipe(source(bundle.file))
+            // optional, remove if you don't need to buffer file contents
+            .pipe(buffer())
+            // optional, remove if you dont want sourcemaps
+            .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
+               // Add transformation tasks to the pipeline here.
+            .pipe(sourcemaps.write('./')) // writes .map file
+            .pipe(gulp.dest(output.js));
+    },
+    watch: function(bundle) {
+        var w = watchify(bundle, {debug: true});
+        w.on('log', gutil.log);
+        w.on('time', function(time) {
+            gutil.log(gutil.colors.green('Browserify'), bundle.file, gutil.colors.blue('in ' + time + ' ms'));
+        });
+        w.on('update', ES6.build.bind(null, bundle));
+        return w;
+    }
 }
 
 gulp.task("vendor", function() {
@@ -74,25 +90,41 @@ gulp.task('sass', function () {
     .pipe(gulp.dest(output.css));
 });
 
-gulp.task("build", ["vendor", "bundle", "sass"], function() {
-  return gulp.src("./src/**/*.html")
-    .pipe(gulp.dest('./dist'));
+gulp.task("config", function() {
+    return gulp.src(configFiles)
+        .pipe(gulp.dest('./dist'));
 });
 
-
-
-gulp.task("serve", ["build", "watch"], function() {
-  return connect.server({
-    root: "./dist",
-    livereload: true,
-    fallback: "./dist/index.html"
-  });
+gulp.task("bundle", function() {
+    // map them to our stream function
+    var bundles = entryFiles.map(function(file) {
+        return ES6.build(ES6.bundle(file));
+    });
+    // create a merged stream
+    return es.merge.apply(null, bundles);
 });
 
-gulp.task("watch", function () {
-  b.on('update', bundle); // on any dep update, runs the bundler
-  gulp.watch('./src/styles/**/*.scss', ['sass']);
-  return bundle();
+gulp.task("watch", ["vendor", "sass", "config"], function () {
+
+    gulp.watch("./src/styles/**/*.scss", ["sass"]);
+    gulp.watch(configFiles, ["config"]);
+
+    var streams = entryFiles.map(function(file) {
+        return ES6.build(ES6.watch(ES6.bundle(file)));
+    });
+
+    // create a merged stream
+    return es.merge.apply(null, streams);
 });
 
-gulp.task("default", ["build", "watch"]);
+gulp.task("serve", ["watch"], function() {
+    return connect.server({
+        root: "./dist",
+        livereload: true,
+        fallback: "./dist/index.html"
+    });
+});
+
+gulp.task("build", ["vendor", "bundle", "sass", "config"]);
+
+gulp.task("default", ["serve"]);
