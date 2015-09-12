@@ -1,0 +1,35 @@
+{
+  "name": "mithril-framework",
+  "version": "0.0.1",
+  "description": "Sample for how to structure Mithril and ES6",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Olfelt",
+  "license": "MIT",
+  "devDependencies": {
+    "babelify": "^6.2.0",
+    "bootstrap": "git+https://github.com/twbs/bootstrap.git#v4-dev",
+    "browserify": "^11.0.1",
+    "envify": "^3.4.0",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^2.3.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-sass": "^2.0.4",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-util": "^3.0.6",
+    "immutable": "^3.7.4",
+    "localforage": "^1.2.10",
+    "lodash.assign": "^3.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.3.1"
+  },
+  "dependencies": {
+    "mithril": "^0.2.0",
+    "moment": "^2.10.6",
+    "underscore": "^1.8.3"
+  }
+}
