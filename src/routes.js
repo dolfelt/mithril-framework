@@ -1,5 +1,5 @@
-import Home from "./controller/home";
-import List from "./controller/list";
+import Home from "controller/home";
+import List from "controller/list";
 
 m.route.mode = "pathname";
 

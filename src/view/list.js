@@ -1,9 +1,13 @@
-import Layout from "view/layout";
+import View from "view/base";
+
+class ListView extends View {
+
+    render() {
+        return m("div", "Data List View!");
+    }
+
+}
 
 export default function(ctrl) {
-    return Layout(m("div", [
-
-    ]), {
-        title: "List"
-    });
+    return new ListView(ctrl).build();
 }

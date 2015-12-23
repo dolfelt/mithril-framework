@@ -16,7 +16,7 @@ Rename `config.example.js` to `config.js` and change any values as necessary.
 cp config.example.js config.js
 ```
 
-Then run:
+Then run the following to serve the application.
 
 ```bash
 gulp serve
@@ -30,7 +30,7 @@ This is an example application attempting to structure Mithril, or any micro JS 
 
 Challenges include:
 * Determining global state and configuration (FLUX-like).
-* Storing data models and forming relationships.
+* Storing data models and forming relationships. Most likely using [js-data](http://www.js-data.io/).
 * Accommodating complex UI/UX designs.
 
 ### Contributing

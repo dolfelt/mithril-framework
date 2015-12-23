@@ -1,11 +1,6 @@
 export default function() {
     var links = [
         {
-            icon: "fa-sign-in",
-            title: "Login",
-            url: "/login"
-        },
-        {
             icon: "fa-dashboard",
             title: "Dashboard",
             url: "/"

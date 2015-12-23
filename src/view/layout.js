@@ -1,10 +1,20 @@
 import Sidebar from "view/layout/sidebar";
 import Header from "view/layout/header";
 
-export default function(body, options) {
-    return m("#the-app", [
-        Sidebar(options),
-        Header(options),
-        m("#content.content", body)
-    ]);
+class Layout {
+    constructor(ctrl, body, opts={}) {
+        this.ctrl = ctrl;
+        this.body = body;
+        this.options = opts;
+    }
+
+    render() {
+        return m("#the-app", [
+            Sidebar(this.options),
+            Header(this.options),
+            m("#content.content", this.body || "No body")
+        ]);
+    }
 }
+
+export default Layout;
