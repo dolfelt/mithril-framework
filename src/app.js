@@ -1,6 +1,6 @@
-import "babelify/polyfill";
+import 'babelify/polyfill';
 
-import "routes";
+import 'routes';
 
 // Any global app settings...
 window.App = {};

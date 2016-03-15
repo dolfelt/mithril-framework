@@ -12,9 +12,9 @@ trim_trailing_whitespace = true
 # CSS Formatting
 [*.{less,scss,css}]
 indent_style = space
-indent_size = 4
+indent_size = 2
 
 # JavaScript Formatting
 [*.js]
 indent_style = space
-indent_size = 4
+indent_size = 2

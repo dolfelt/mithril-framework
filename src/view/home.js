@@ -1,13 +1,14 @@
-import View from "view/base";
+import m from 'mithril';
+import View from 'view/base';
 
 class HomeView extends View {
 
-    render() {
-        return m("div", "Dashboard View!");
-    }
+  render() {
+    return m('div', 'Dashboard View!');
+  }
 
 }
 
 export default function(ctrl) {
-    return new HomeView(ctrl).build();
+  return new HomeView(ctrl).build();
 }

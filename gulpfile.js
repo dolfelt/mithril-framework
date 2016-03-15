@@ -1,26 +1,31 @@
 // jshint ignore: start
-var gulp = require("gulp");
+var gulp = require('gulp');
 var watchify = require('watchify');
 var browserify = require('browserify');
-var babelify = require("babelify");
-var envify = require("envify/custom");
-var sourcemaps = require("gulp-sourcemaps");
+var babelify = require('babelify');
+var envify = require('envify/custom');
+var sourcemaps = require('gulp-sourcemaps');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
 var es = require('event-stream');
-
-var concat = require("gulp-concat");
-var sass = require("gulp-sass");
+var fs = require('fs');
+var rev = require('gulp-rev');
+var revReplace = require('gulp-rev-replace');
+var del = require('del');
+var ghPages = require('gulp-gh-pages');
+var concat = require('gulp-concat');
+var sass = require('gulp-sass');
 var autoprefixer = require('gulp-autoprefixer');
-var connect = require("gulp-connect");
+var connect = require('gulp-connect');
 
 // Configuration
 var sourcePath = './src/';
 var entryFiles = [
-    'app.js'
+  'app.js'
 ];
 var output = {
+  'dist': './dist',
   'js': './dist/assets/js',
   'css': './dist/assets/css'
 };
@@ -29,26 +34,27 @@ var vendorFiles = [
   'node_modules/underscore/underscore.js'
 ];
 var configFiles = [
-    './src/index.html'
+  './src/index.html'
 ];
+var absolutePath = '/';
 
 var ES6 = {
-    bundle: function(file) {
-        var opts = {
-            entries: [sourcePath + file],
-            paths: ['./node_modules', sourcePath],
-            cache: {},
-            packageCache: {}
-        };
-        var b = browserify(opts);
-        b.file = file;
+  bundle: function(file) {
+    var opts = {
+      entries: [sourcePath + file],
+      paths: ['./node_modules', sourcePath],
+      cache: {},
+      packageCache: {}
+    };
+    var b = browserify(opts);
+    b.file = file;
 
-        b.transform(babelify).transform(envify(require('./config.js')));
+    b.transform(babelify).transform(envify(require('./config.js')));
 
-        return b;
-    },
-    build: function(bundle) {
-        return bundle.bundle()
+    return b;
+  },
+  build: function(bundle) {
+    return bundle.bundle()
             // log errors if they happen
             .on('error', gutil.log.bind(gutil, 'Browserify Error'))
             .pipe(source(bundle.file))
@@ -59,19 +65,19 @@ var ES6 = {
                // Add transformation tasks to the pipeline here.
             .pipe(sourcemaps.write('./')) // writes .map file
             .pipe(gulp.dest(output.js));
-    },
-    watch: function(bundle) {
-        var w = watchify(bundle, {debug: true});
-        w.on('log', gutil.log);
-        w.on('time', function(time) {
-            gutil.log(gutil.colors.green('Browserify'), bundle.file, gutil.colors.blue('in ' + time + ' ms'));
-        });
-        w.on('update', ES6.build.bind(null, bundle));
-        return w;
-    }
-}
+  },
+  watch: function(bundle) {
+    var w = watchify(bundle, {debug: true});
+    w.on('log', gutil.log);
+    w.on('time', function(time) {
+      gutil.log(gutil.colors.green('Browserify'), bundle.file, gutil.colors.blue('in ' + time + ' ms'));
+    });
+    w.on('update', ES6.build.bind(null, bundle));
+    return w;
+  }
+};
 
-gulp.task("vendor", function() {
+gulp.task('vendor', function() {
   return gulp.src(vendorFiles)
     .pipe(sourcemaps.init())
       .pipe(concat('vendor.js'))
@@ -83,48 +89,97 @@ gulp.task('sass', function () {
   return gulp.src('./src/styles/[^_]*.scss')
     .pipe(sass().on('error', sass.logError))
     .pipe(autoprefixer({
-        browsers: ['last 2 versions', 'ie >= 9'], // More info at https://github.com/ai/browserslist
-        cascade: false
+      browsers: ['last 2 versions', 'ie >= 9'], // More info at https://github.com/ai/browserslist
+      cascade: false
     }))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(output.css));
 });
 
-gulp.task("config", function() {
-    return gulp.src(configFiles)
-        .pipe(gulp.dest('./dist'));
+gulp.task('config', function() {
+  return gulp.src(configFiles)
+        .pipe(gulp.dest(output.dist));
 });
 
-gulp.task("bundle", function() {
+gulp.task('bundle', function() {
     // map them to our stream function
-    var bundles = entryFiles.map(function(file) {
-        return ES6.build(ES6.bundle(file));
-    });
+  var bundles = entryFiles.map(function(file) {
+    return ES6.build(ES6.bundle(file));
+  });
     // create a merged stream
-    return es.merge.apply(null, bundles);
+  return es.merge.apply(null, bundles);
 });
 
-gulp.task("watch", ["vendor", "sass", "config"], function () {
+gulp.task('clean', function() {
+  return del.sync([output.dist + '/**', '!'+ output.dist]);
+});
 
-    gulp.watch("./src/styles/**/*.scss", ["sass"]);
-    gulp.watch(configFiles, ["config"]);
+gulp.task('watch', ['vendor', 'sass', 'config'], function () {
 
-    var streams = entryFiles.map(function(file) {
-        return ES6.build(ES6.watch(ES6.bundle(file)));
-    });
+  gulp.watch('./src/styles/**/*.scss', ['sass']);
+  gulp.watch(configFiles, ['config']);
+
+  var streams = entryFiles.map(function(file) {
+    return ES6.build(ES6.watch(ES6.bundle(file)));
+  });
 
     // create a merged stream
-    return es.merge.apply(null, streams);
+  return es.merge.apply(null, streams);
 });
 
-gulp.task("serve", ["watch"], function() {
-    return connect.server({
-        root: "./dist",
-        livereload: true,
-        fallback: "./dist/index.html"
+gulp.task('serve', ['watch'], function() {
+  return connect.server({
+    root: './dist',
+    livereload: true,
+    fallback: './dist/index.html'
+  });
+});
+
+gulp.task('rev-build', ['clean', 'vendor', 'bundle', 'sass'], function(){
+  return gulp.src(['dist/**/*.css', 'dist/**/*.js'])
+        .pipe(rev())
+        .pipe(gulp.dest(output.dist))
+        .pipe(rev.manifest())
+        .pipe(gulp.dest(output.dist));
+});
+
+gulp.task('rev-rename', ['rev-build'], function() {
+  var manifestFile = output.dist + '/rev-manifest.json';
+  var manifest = gulp.src(manifestFile);
+
+  return gulp.src(configFiles)
+        .pipe(revReplace({
+          manifest: manifest,
+          prefix: absolutePath
+        }))
+        .pipe(gulp.dest(output.dist));
+});
+
+gulp.task('revision', ['rev-rename'], function() {
+  var manifestFile = output.dist + '/rev-manifest.json';
+  var manifestArr = require(manifestFile);
+
+    // Rename sourcemaps
+  for (var i in manifestArr) {
+    fs.rename(output.dist + '/' + i + '.map', output.dist + '/' + manifestArr[i] + '.map', function() {
+      // Do nothing
     });
+  }
+    // Delete the original files from the source dir
+  var toClean = Object.keys(manifestArr).map(function(p) {
+    return [output.dist, p].join('/');
+  });
+  return del(toClean);
 });
 
-gulp.task("build", ["vendor", "bundle", "sass", "config"]);
+gulp.task('pre', function() {
+  absolutePath = '/mithril-framework/';
+});
+gulp.task('publish', ['pre', 'build'], function() {
+  return gulp.src('./dist/**/*')
+        .pipe(ghPages());
+});
 
-gulp.task("default", ["serve"]);
+gulp.task('build', ['revision']);
+
+gulp.task('default', ['serve']);

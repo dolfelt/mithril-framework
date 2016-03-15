@@ -1,18 +1,18 @@
-import Layout from "view/layout";
+import Layout from 'view/layout';
 
 class View {
 
-    constructor(ctrl) {
-        this.ctrl = ctrl;
-    }
+  constructor(ctrl) {
+    this.ctrl = ctrl;
+  }
 
-    build() {
-        return new Layout(
-            this.ctrl,
-            this.render(),
-            this.ctrl.options()
-        ).render();
-    }
+  build() {
+    return new Layout(
+      this.ctrl,
+      this.render(),
+      this.ctrl.options()
+    ).render();
+  }
 }
 
 export default View;

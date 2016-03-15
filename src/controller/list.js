@@ -1,22 +1,22 @@
-import Controller from "controller/base";
-import ListView from "view/list";
+import Controller from 'controller/base';
+import ListView from 'view/list';
 
 class ListController extends Controller {
 
-    constructor() {
-        super();
+  constructor() {
+    super();
 
-        
-    }
 
-    options() {
-        return {
-            title: "List"
-        };
-    }
+  }
+
+  options() {
+    return {
+      title: 'List'
+    };
+  }
 }
 
 export default {
-    controller: ListController,
-    view: ListView
+  controller: ListController,
+  view: ListView
 };

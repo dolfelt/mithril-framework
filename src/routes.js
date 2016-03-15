@@ -1,9 +1,10 @@
-import Home from "controller/home";
-import List from "controller/list";
+import m from 'mithril';
+import Home from 'controller/home';
+import List from 'controller/list';
 
-m.route.mode = "pathname";
+m.route.mode = 'hash';
 
-export default m.route(document.body, "/", {
-    "/": Home,
-    "/list": List,
+export default m.route(document.body, '/', {
+  '/': Home,
+  '/list': List
 });
