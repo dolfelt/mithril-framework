@@ -6968,7 +6968,7 @@ var HomeView = (function (_View) {
   _createClass(HomeView, [{
     key: 'render',
     value: function render() {
-      return (0, _mithril2['default'])('div', 'Dashboard View!');
+      return (0, _mithril2['default'])('.row', [(0, _mithril2['default'])('.col-md-12', [(0, _mithril2['default'])('p', 'Just a basic page with not much on it.'), (0, _mithril2['default'])('p', ['For more to read, visit ', (0, _mithril2['default'])('a', { href: 'http://ctobyday.com' }, 'ctobyday.com')])])]);
     }
   }]);
 
