@@ -1,6 +1,13 @@
 ## mithril-framework
 
-A simple [Mithril](https://lhorie.github.io/mithril/) application using ES6 modules for structure and future compatibility. All code is compiled to be ES5 compatible using [Browserify](http://browserify.org/) and [Babel](https://babeljs.io/).
+A simple [Mithril](https://lhorie.github.io/mithril/) application using ES6
+modules for structure and future compatibility. All code is compiled to be ES5
+compatible using [Browserify](http://browserify.org/) and
+[Babel](https://babeljs.io/).
+
+### Example
+
+An example can be viewed at http://dolfelt.github.io/mithril-framework/
 
 ### Installing
 
