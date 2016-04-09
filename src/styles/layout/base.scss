@@ -33,6 +33,7 @@ ul {
     .navbar__title {
         font-weight: 300;
         line-height: 60px;
+        font-size: 2em;
         margin: 0;
         padding-left: 15px;
         float: left;
@@ -114,4 +115,8 @@ ul {
 
 #content {
     padding: 60px 0 0 200px;
+}
+
+.content--inside {
+  padding: 20px;
 }

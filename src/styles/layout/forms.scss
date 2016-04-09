@@ -20,3 +20,11 @@
         transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     }
 }
+
+.contact--image {
+  width: 64px;
+  height: 64px;
+  float: left;
+  margin-right: 20px;
+  border-radius: 50%;
+}

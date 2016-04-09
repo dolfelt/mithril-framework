@@ -13,7 +13,9 @@ class Layout {
     return m('#the-app', [
       Sidebar(this.options),
       Header(this.options),
-      m('#content.content', this.body || 'No body')
+      m('#content.content', [
+        m('.content--inside', this.body || 'No body')
+      ])
     ]);
   }
 }
